@@ -1,0 +1,6 @@
+data/com.Azakidev.TestApp.desktop.in.in
+data/com.Azakidev.TestApp.gschema.xml.in
+data/com.Azakidev.TestApp.metainfo.xml.in.in
+data/resources/ui/shortcuts.ui
+data/resources/ui/window.ui
+src/application.rs
