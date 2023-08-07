@@ -1,23 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Azakidev 2019 <zazaguichi@outlook.com> -->
+<!-- Azakidev <zazaguichi@outlook.com> -->
 <component type="desktop-application">
   <id>@app-id@</id>
   <metadata_license>CC0</metadata_license>
-  <!-- Insert your license of choice here -->
-  <!-- <project_license>MIT</project_license> -->
-  <name>Test App</name>
-  <summary>Write a GTK + Rust application</summary>
+  <project_license>MIT</project_license>
+  <name>Annota</name>
+  <summary>A simple text editor written in Rust</summary>
   <description>
-    <p>A boilerplate template for GTK + Rust. It uses Meson as a build system and has flatpak support by default.</p>
+    <p>A simple text editor written in Rust. Made for me to learn Rust and GTK development and to experiment with GNOME technologies</p>
   </description>
   <screenshots>
     <screenshot type="default">
-      <image>https://gitlab.gnome.org/bilelmoussaoui/test-app/raw/master/data/resources/screenshots/screenshot1.png</image>
+      <image>screenshots/1.png</image>
       <caption>Main window</caption>
     </screenshot>
   </screenshots>
-  <url type="homepage">https://gitlab.gnome.org/bilelmoussaoui/test-app</url>
-  <url type="bugtracker">https://gitlab.gnome.org/bilelmoussaoui/test-app/issues</url>
+  <url type="homepage">https://azakidev.github.io/link-hub</url>
+  <url type="bugtracker">https://azakidev.github.io/link-hub/labs</url>
   <content_rating type="oars-1.0" />
   <releases>
     <release version="0.1.0" date="2019-07-11" />

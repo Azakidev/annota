@@ -1,0 +1,135 @@
+using Gtk 4.0;
+using Adw 1;
+
+menu primary_menu {
+  section {
+    item {
+      label: _("_Preferences");
+      action: "app.preferences";
+    }
+
+    item {
+      label: _("_Keyboard Shortcuts");
+      action: "win.show-help-overlay";
+    }
+
+    item {
+      label: _("_About Annota");
+      action: "app.about";
+    }
+  }
+}
+menu new-menu {
+  item {
+    label: _("New File");
+    action: "win.new-tab";
+  }
+  item {
+    label: _("New Window");
+    action: "app.new-win";
+  }
+}
+
+template $ExampleApplicationWindow : Adw.ApplicationWindow {
+  Adw.ToastOverlay overlay {
+    Stack stack {
+      transition-type: crossfade;
+      StackPage {
+        name: "empty";
+        child: 
+        Box{
+          orientation: vertical;
+          hexpand: true;
+          vexpand: true;
+
+          Adw.HeaderBar {
+            [end]
+            MenuButton {
+              icon-name: "open-menu-symbolic";
+              menu-model: primary_menu;
+            }
+          }
+
+          Box {
+          orientation: vertical;
+          valign: center;
+          hexpand: true;
+          vexpand: true;
+
+            Adw.StatusPage {
+            hexpand: true;
+            vexpand: true;
+            title: _("Wanna write some stuff?");
+            icon-name: "document-edit-symbolic";
+            margin-bottom: 32;
+            }
+            Box {
+            orientation: horizontal;
+            halign: center;
+            spacing: 24;
+              Button {
+                Adw.ButtonContent {
+                label: _("Open file");
+                icon-name: "document-open-symbolic";
+                }
+                action-name: "win.open-files";
+                styles ["pill", "button"]
+              }
+              Button {
+                Adw.ButtonContent {
+                label: _("New File");
+                icon-name: "document-new-symbolic";
+                }
+                action-name: "win.new-tab";
+                styles ["pill", "button"]
+              }
+            }
+          }
+        };
+      }
+
+      StackPage {
+        name: "main";
+        child:
+        Adw.TabOverview overview {
+        view: tab_view;
+        enable-new-tab: false;
+        create-tab => $create_tab();
+        Box {
+          orientation: vertical;
+          Adw.HeaderBar headerbar {
+            Adw.SplitButton new_tab_button {
+              menu-model: new-menu;
+              action-name: "win.open-files";
+              Adw.ButtonContent {
+                icon-name: "folder-open-symbolic";
+                label: _("Open");
+              }
+              tooltip-text: _("Open a file or create a new one");
+            }
+            Button {
+              icon-name: "media-floppy-symbolic";
+              tooltip-text: _("Save");
+            }
+            [end]
+            MenuButton {
+              icon-name: "open-menu-symbolic";
+              menu-model: primary_menu;
+            }
+            [end]
+            Adw.TabButton button_overview {
+              action-name: "overview.open";
+              tooltip-text: _("Open tab overview");
+            }
+          }
+          Adw.TabBar {
+            view: tab_view;
+          }
+          Adw.TabView tab_view {
+            }
+          }
+        };
+      }
+    }
+  }
+}

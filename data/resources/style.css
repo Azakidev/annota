@@ -2,3 +2,15 @@
   font-size: 36px;
   font-weight: bold;
 }
+
+.button{
+  font-size: 18px;
+  min-width: 80px;
+  min-height: 30px;
+  margin-bottom: 32px;
+}
+
+.dialoglabel {
+  font-size: 20px;
+  font-weight: bold;
+}

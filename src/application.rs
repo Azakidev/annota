@@ -2,11 +2,11 @@ use gettextrs::gettext;
 use log::{debug, info};
 
 use gtk::prelude::*;
-use gtk::subclass::prelude::*;
+use adw::subclass::prelude::*;
 use gtk::{gdk, gio, glib};
 
 use crate::config::{APP_ID, PKGDATADIR, PROFILE, VERSION};
-use crate::window::ExampleApplicationWindow;
+use crate::ui::*;
 
 mod imp {
     use super::*;
@@ -22,7 +22,7 @@ mod imp {
     impl ObjectSubclass for ExampleApplication {
         const NAME: &'static str = "ExampleApplication";
         type Type = super::ExampleApplication;
-        type ParentType = gtk::Application;
+        type ParentType = adw::Application;
     }
 
     impl ObjectImpl for ExampleApplication {}
@@ -62,11 +62,12 @@ mod imp {
     }
 
     impl GtkApplicationImpl for ExampleApplication {}
+    impl AdwApplicationImpl for ExampleApplication {}
 }
 
 glib::wrapper! {
     pub struct ExampleApplication(ObjectSubclass<imp::ExampleApplication>)
-        @extends gio::Application, gtk::Application,
+        @extends gio::Application, gtk::Application, adw::Application,
         @implements gio::ActionMap, gio::ActionGroup;
 }
 
@@ -85,26 +86,39 @@ impl ExampleApplication {
             })
             .build();
 
+        let action_new_win = gio::ActionEntry::builder("new-win")
+            .activate(move |app:&Self, _, _| {
+                ExampleApplicationWindow::new(app).present();
+            })
+            .build();
+
         // About
         let action_about = gio::ActionEntry::builder("about")
             .activate(|app: &Self, _, _| {
                 app.show_about_dialog();
             })
             .build();
-        self.add_action_entries([action_quit, action_about]);
+
+        self.add_action_entries([action_quit, action_new_win, action_about]);
     }
 
     // Sets up keyboard shortcuts
     fn setup_accels(&self) {
-        self.set_accels_for_action("app.quit", &["<Control>q"]);
-        self.set_accels_for_action("window.close", &["<Control>w"]);
+        //General shortcuts
+        self.set_accels_for_action("app.quit", &["<Control>Q"]);
+        self.set_accels_for_action("app.new-win", &["<Shift><Control>T"]);
+        
+        //Tabs shortcuts
+        self.set_accels_for_action("win.close-tab", &["<Control>W"]);
+        self.set_accels_for_action("win.new-tab", &["<Control>T"]);
+        self.set_accels_for_action("win.open-files", &["<Control>O"]);
     }
-
+    #[allow(clippy::unused_self)]
     fn setup_css(&self) {
         let provider = gtk::CssProvider::new();
-        provider.load_from_resource("/com/Azakidev/TestApp/style.css");
+        provider.load_from_resource("/com/Azakidev/Annota/style.css");
         if let Some(display) = gdk::Display::default() {
-            gtk::StyleContext::add_provider_for_display(
+            gtk::style_context_add_provider_for_display(
                 &display,
                 &provider,
                 gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
@@ -112,22 +126,23 @@ impl ExampleApplication {
         }
     }
 
+    // About dialog
     fn show_about_dialog(&self) {
-        let dialog = gtk::AboutDialog::builder()
-            .logo_icon_name(APP_ID)
-            // Insert your license of choice here
-            // .license_type(gtk::License::MitX11)
-            // Insert your website here
-            // .website("https://gitlab.gnome.org/bilelmoussaoui/test-app/")
+        let window = self.active_window().unwrap();
+
+        let about = adw::AboutWindow::builder()
+            .transient_for(&window)
+            .application_name("Annota")
+            .application_icon(APP_ID)
             .version(VERSION)
-            .transient_for(&self.main_window())
+            .license_type(gtk::License::MitX11)
+            .developer_name("Azakidev")
+            .developers(vec!["Azakidev https://azakidev.github.io/link-hub"])
             .translator_credits(gettext("translator-credits"))
-            .modal(true)
-            .authors(vec!["Azakidev"])
-            .artists(vec!["Azakidev"])
+            .website("https://github.com/Azakidev")
             .build();
 
-        dialog.present();
+        about.present();
     }
 
     pub fn run(&self) -> glib::ExitCode {
@@ -143,7 +158,7 @@ impl Default for ExampleApplication {
     fn default() -> Self {
         glib::Object::builder()
             .property("application-id", APP_ID)
-            .property("resource-base-path", "/com/Azakidev/TestApp/")
+            .property("resource-base-path", "/com/Azakidev/Annota/")
             .build()
     }
 }
