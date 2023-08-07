@@ -1,13 +1,13 @@
 use sourceview5::prelude::*;
 
+use ashpd::desktop::file_chooser::{Choice, FileFilter, SelectedFiles};
 use sourceview5::traits::BufferExt;
-use url::Url;
 use string_join::Join;
-use ashpd::desktop::file_chooser::{FileFilter, Choice, SelectedFiles};
+use url::Url;
 
-use gtk::{prelude::*, template_callbacks};
 use adw::subclass::prelude::*;
 use gtk::{gio, glib};
+use gtk::{prelude::*, template_callbacks};
 
 use crate::application::ExampleApplication;
 use crate::config::{APP_ID, PROFILE};
@@ -59,21 +59,20 @@ mod imp {
             klass.install_action("win.new-tab", None, |win, _, _| {
                 construct_tab(win, "New tab", "Empty editor");
             });
-            klass.install_action_async("win.open-files", None, |win, _, _| 
-            async move {
+            klass.install_action_async("win.open-files", None, |win, _, _| async move {
                 win.open_file().await;
             });
 
-            klass.install_action("win.close-tab", None, |win,_,_| {
+            klass.install_action("win.close-tab", None, |win, _, _| {
                 let stack = &win.imp().stack;
                 let tab_view = &win.imp().tab_view;
                 let page = tab_view.selected_page();
-                
+
                 if stack.visible_child_name().unwrap().as_str() != "empty" {
                     if tab_view.n_pages() != 0 {
                         tab_view.close_page(page.unwrap().as_ref());
                     }
-                    
+
                     if tab_view.n_pages() == 0 {
                         stack.set_visible_child_name("empty")
                     }
@@ -132,7 +131,7 @@ impl ExampleApplicationWindow {
     }
 
     #[template_callback]
-    pub fn create_tab(tab_overview:&adw::TabOverview) -> adw::TabPage {
+    pub fn create_tab(tab_overview: &adw::TabOverview) -> adw::TabPage {
         let tab_view = tab_overview.view().unwrap();
 
         let page = adw::StatusPage::builder()
@@ -183,10 +182,7 @@ impl ExampleApplicationWindow {
             .modal(true)
             .multiple(true)
             .directory(false)
-            .choice(
-                Choice::new("encoding", "Encoding", "utf8")
-                    .insert("utf8", "Unicode (UTF-8)")
-            )
+            .choice(Choice::new("encoding", "Encoding", "utf8").insert("utf8", "Unicode (UTF-8)"))
             .filter(FileFilter::new("Plain text").mimetype("text/plain"))
             .filter(FileFilter::new("All files").mimetype("application/octet-stream"));
 
@@ -194,18 +190,30 @@ impl ExampleApplicationWindow {
             Ok(files) => {
                 for uri in files.uris() {
                     let toast = adw::Toast::builder()
-                        .title(" ".join([
-                            "Opened:", 
-                            Url::parse(uri.as_str()).unwrap().path_segments().unwrap().last().unwrap()
-                            ]))
+                        .title(
+                            " ".join([
+                                "Opened:",
+                                Url::parse(uri.as_str())
+                                    .unwrap()
+                                    .path_segments()
+                                    .unwrap()
+                                    .last()
+                                    .unwrap(),
+                            ]),
+                        )
                         .timeout(1)
                         .build();
                     overlay.add_toast(toast);
-                    
+
                     construct_editor(
-                        self, 
-                        Url::parse(uri.as_str()).unwrap().path_segments().unwrap().last().unwrap(), 
-                        uri.clone()
+                        self,
+                        Url::parse(uri.as_str())
+                            .unwrap()
+                            .path_segments()
+                            .unwrap()
+                            .last()
+                            .unwrap(),
+                        uri.clone(),
                     )
                 }
             }
@@ -213,9 +221,9 @@ impl ExampleApplicationWindow {
                 if err.to_string() != *"Portal request didn't succeed: Cancelled" {
                     log::warn!("Failed to load file: {err}");
                     let errtoast = adw::Toast::builder()
-                            .title("There was an error loading the file!")
-                            .timeout(1)
-                            .build();
+                        .title("There was an error loading the file!")
+                        .timeout(1)
+                        .build();
                     overlay.add_toast(errtoast);
                 }
             }
@@ -223,61 +231,46 @@ impl ExampleApplicationWindow {
     }
 }
 
-pub fn construct_tab(
-    win: &ExampleApplicationWindow, 
-    tab_title:&str,
-    title:&str
-) {
+pub fn construct_tab(win: &ExampleApplicationWindow, tab_title: &str, title: &str) {
     let tab_view = &win.imp().tab_view;
     let stack = &win.imp().stack;
-
 
     let page = adw::StatusPage::builder()
         .title(" ".join([title, " here."]))
         .vexpand(true)
         .build();
-    
-    
+
     let tab_page = tab_view.append(&page);
     tab_page.set_title(tab_title);
     tab_page.set_live_thumbnail(true);
     tab_view.set_selected_page(&tab_page);
-    
+
     if stack.visible_child_name().unwrap().as_str() == "empty" {
         stack.set_visible_child_name("main")
     }
 }
 
-pub fn construct_editor(
-    win: &ExampleApplicationWindow, 
-    tab_title:&str,
-    uri:Url
-) {
+pub fn construct_editor(win: &ExampleApplicationWindow, tab_title: &str, uri: Url) {
     let tab_view = &win.imp().tab_view;
     let stack = &win.imp().stack;
     let file = std::path::Path::new(uri.as_str());
 
     let buffer = sourceview5::Buffer::new(None);
     buffer.set_highlight_syntax(true);
-    if let Some(ref language) = sourceview5::LanguageManager::new().guess_language(Some(file), None) {
+    if let Some(ref language) = sourceview5::LanguageManager::new().guess_language(Some(file), None)
+    {
         buffer.set_language(Some(language));
     }
     if let Some(ref scheme) = sourceview5::StyleSchemeManager::new().scheme("classic-dark") {
         buffer.set_style_scheme(Some(scheme));
     }
-    
+
     let file = gio::File::for_path(uri.path());
     let file = sourceview5::File::builder().location(&file).build();
     let loader = sourceview5::FileLoader::new(&buffer, &file);
-    loader.load_async(
-        glib::Priority::default(),
-        gio::Cancellable::NONE,
-        |res| {
-            println!("loaded: {:?}", res);
-        },
-    );
-    
-    
+    loader.load_async(glib::Priority::default(), gio::Cancellable::NONE, |res| {
+        println!("loaded: {:?}", res);
+    });
 
     let view = sourceview5::View::with_buffer(&buffer);
     view.set_monospace(true);
@@ -288,10 +281,8 @@ pub fn construct_editor(
     view.set_hexpand(true);
     view.set_vexpand(true);
     view.set_wrap_mode(gtk::WrapMode::Word);
-    
-    let scrollable = gtk::ScrolledWindow::builder()
-        .child(&view)
-        .build();
+
+    let scrollable = gtk::ScrolledWindow::builder().child(&view).build();
     scrollable.set_vexpand(true);
 
     let tab_page = tab_view.append(&scrollable);

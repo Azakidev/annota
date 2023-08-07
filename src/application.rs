@@ -1,8 +1,8 @@
 use gettextrs::gettext;
 use log::{debug, info};
 
-use gtk::prelude::*;
 use adw::subclass::prelude::*;
+use gtk::prelude::*;
 use gtk::{gdk, gio, glib};
 
 use crate::config::{APP_ID, PKGDATADIR, PROFILE, VERSION};
@@ -87,7 +87,7 @@ impl ExampleApplication {
             .build();
 
         let action_new_win = gio::ActionEntry::builder("new-win")
-            .activate(move |app:&Self, _, _| {
+            .activate(move |app: &Self, _, _| {
                 ExampleApplicationWindow::new(app).present();
             })
             .build();
@@ -107,7 +107,7 @@ impl ExampleApplication {
         //General shortcuts
         self.set_accels_for_action("app.quit", &["<Control>Q"]);
         self.set_accels_for_action("app.new-win", &["<Shift><Control>T"]);
-        
+
         //Tabs shortcuts
         self.set_accels_for_action("win.close-tab", &["<Control>W"]);
         self.set_accels_for_action("win.new-tab", &["<Control>T"]);
